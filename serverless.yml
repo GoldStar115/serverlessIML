@@ -1,0 +1,37 @@
+service: binance-scraper
+
+package:
+  exclude:
+    - node_modules/aws-sdk
+
+plugins:
+  - serverless-webpack
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  region: us-east-2
+  stage: dev
+  timeout: 480
+  memorySize: 256
+  iamRoleStatements:
+    -  Effect: "Allow"
+       Action:
+         - "s3:*"
+         - "dynamodb:*"
+         - "lambda:*"
+       Resource: "*"
+  environment:
+    REGION: ${self:provider.region}
+    SOURCE: BINANCE
+    STAGE: ${self:custom.stage}
+    NUMLIMIT : 2
+
+custom:
+  webpackIncludeModules: true
+  stage: ${opt:stage, self:provider.stage}
+functions:
+  scrap:
+    handler: src/handler.scrap
+    events:      
+      - schedule: cron(*/2 * * * ? *)      
